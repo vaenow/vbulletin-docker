@@ -1,0 +1,24 @@
+FROM php:8.1.1-apache
+
+# Install dependencies
+#RUN add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+RUN apt-get -y update
+RUN apt-get -y install unzip
+RUN apt-get install -y \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli && apachectl restart
+
+# test vbulletin env
+ADD vb_test.php /var/www/html/ 
+
+WORKDIR /var/www/html/
+
+EXPOSE 80
+
+#CMD [ "php", "./vb_test.php" ]
